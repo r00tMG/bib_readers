@@ -225,8 +225,7 @@ async def reservation(request:Request,id_livre:int=Form(), db:Session=Depends(ge
         db.refresh(new_reservation)
         #Update disponibility
         this_livre = db.query(models.Livre).filter(models.Livre.id == id_livre).first()
-        #livre_response=schemas.LivreResponse.from_orm(this_livre)
-        #print(this_update)
+
     return templates.TemplateResponse("home.html", {
         "request":request
     })
