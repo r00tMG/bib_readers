@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>BibReaders update livre</title>
+</head>
+<body>
+{% include "components/navbar.html" %}
+<div class="container mt-5 w-75 border-1">
+    <div class="register">
+        <div class="content">
+            <h1 class="text-center my-5">Modification d'un livre</h1>
+            {% if error_updated %}
+            <div class="alert alert-danger">
+                {{error_updated.message}}
+            </div>
+            {% endif %}
+            {% if error_id_undefined %}
+            <div class="alert alert-danger">
+                {{error_id_undefined.message}}
+            </div>
+            {% endif %}
+
+            <form class="form-group" action="/api/update_livre" method="POST" enctype="multipart/form-data">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            {% if livre %}
+                            <input type="text" class="form-control" value="{{livre.titre or ''}}"  placeholder="Titre" name="titre">
+                            {% endif %}
+                            {% if errors %}
+                            <p class="text-danger"></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                    <div class="mb-3">
+                        <div class="form-group">
+                            {% if livre %}
+                            <textarea class="form-control" placeholder="Description" name="description">{{livre.description or ''}}</textarea>
+                            {% endif %}
+                            {% if errors %}
+                                <p class="text-danger">{{ errors[2] }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            {% if livre %}
+                            <input type="file" class="form-control" value="{{livre.image_url or ''}}" placeholder="Image URL" name="image_url">
+                            {% endif %}
+                            {% if errors %}
+                            <p class="text-danger">{{ errors[0]["image_url"] }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            {% if livre %}
+                            <input type="number" class="form-control" value="{{livre.stock or ''}}"  placeholder="Stock"
+                                   name="stock">
+                            {% endif %}
+                            {% if errors %}
+                            <p class="text-danger">{{ errors[4] }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            {% if livre %}
+                            <input type="number" max="5" min="0" value="{{livre.rating or ''}}" class="form-control"  placeholder="Rating"
+                                   name="rating">
+                            {% endif %}
+                            {% if errors %}
+                            <p class="text-danger">{{ errors[4] }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <span class="clearfix"></span>
+                <button class="btn btn-success " type="submit">Update</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
