@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>BibReaders Create livre</title>
+</head>
+<body>
+{% include "components/navbar.html" %}
+<div class="container mt-5 w-75 border-1">
+    <div class="register">
+        <div class="content">
+            <h1 class="text-center my-5">Création de livre</h1>
+            {% if error_save_livre %}
+            <div class="alert alert-danger">
+                {{error_save_livre.message}}
+            </div>
+            {% endif %}
+
+            <form class="form-group" action="/api/create_livre" method="POST" enctype="multipart/form-data">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <input type="text" class="form-control"  placeholder="Titre" name="titre">
+                            {% if errors %}
+                            <p class="text-danger"></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                    <div class="mb-3">
+                        <div class="form-group">
+                            <textarea class="form-control"  placeholder="Description" name="description"></textarea>
+                            {% if errors %}
+                                <p class="text-danger">{{ errors[2] }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <input type="file" class="form-control"  placeholder="Image URL" name="image_url">
+                            {% if errors %}
+                            <p class="text-danger">{{ errors[0]["image_url"] }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <input type="number" class="form-control"  placeholder="Stock"
+                                   name="stock">
+                            {% if errors %}
+                            <p class="text-danger">{{ errors[4] }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <input type="number" max="5" min="0" class="form-control"  placeholder="Rating"
+                                   name="rating">
+                            {% if errors %}
+                            <p class="text-danger">{{ errors[4] }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <span class="clearfix"></span>
+                <button class="btn btn-success " type="submit">Creer</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
