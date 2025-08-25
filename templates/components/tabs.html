@@ -1,0 +1,10 @@
+<ul class="nav nav-tabs">
+  <li class="nav-item">
+    <a class="nav-link {% if request.url.path == '/profile' %} 'active' {% endif %}" aria-current="page" href="/profile">Profile</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if request.url.path == '/api/mes-emprunts' %} 'active' {% endif %}" href="/api/mes-emprunts">Emprunts</a>
+  </li>
+
+</ul>
+

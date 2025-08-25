@@ -20,33 +20,47 @@ async def login(request: Request):
     error_login = request.session.pop("error_login", None)
     success_logout = request.session.pop("success_logout", None)
     success_register = request.session.pop("success_register", None)
-    return templates.TemplateResponse("/auth/login.html", {"request": request, "error_login":error_login, "success_logout":success_logout})
+    return templates.TemplateResponse("/auth/login.html", {
+        "request": request,
+        "error_login":error_login,
+        "success_logout":success_logout,
+        "success_register":success_register
+    })
 
 
 @routes.post("/api/login", response_class=HTMLResponse, response_model=schemas.UserResponse)
 async def login(request: Request,
+                email:str = Form(...),
+                password:str = Form(),
                 db: Session = Depends(get_db)):
-    form = await request.form()
-    email = form.get("email")
-    password = form.get("password")
+    #form = await request.form()
+    #email:str = form.get("email")
+    #password:str = form.get("password")
     user = db.query(models.User).filter(models.User.email == email).first()
-    user_response = schemas.UserResponse.from_orm(user)
+    if not user:
+        request.session['error_login'] = {
+            "status": "error",
+            "message": "Email ou mot de passe invalide"
+        }
+        return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
     errors = []
     if not email or not password:
-        errors.append({"email":"Mauvais identifiants"})
+        errors.append({"email":"Email requis"})
         print(errors)
         return templates.TemplateResponse("auth/login.html", {'request': request,"errors":errors } )
 
-    if email != user_response.email or not verify_password(password, user.password):
+    if email != user.email or not verify_password(password, user.password):
+        errors.append({"email": "Mauvais identifiants"})
+        print(errors)
         request.session['error_login'] = {
            "status":"error",
             "message":"Mauvaise identifiants"
         }
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
-    request.session['user_id'] = user_response.id
-    print("role de l'utilisateur: ", user_response.role)
+    request.session['user_id'] = user.id
+    print("role de l'utilisateur: ", user.role)
 
-    request.session['role'] = user_response.role
+    request.session['role'] = user.role
     request.session["success_login"] = {
         "status":"success",
         "message":"Connexion réussie, Bienvenu dans BIBREADERS"

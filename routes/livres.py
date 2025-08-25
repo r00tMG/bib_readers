@@ -1,8 +1,10 @@
 import os
 import shutil
+from email.policy import default
 from typing import List, Optional
 
-from fastapi import APIRouter, Request, UploadFile, Depends, Form, File, Query
+from fastapi import APIRouter, Request, UploadFile, Depends, Form, File, Query, HTTPException
+from sqlalchemy import DateTime
 from sqlalchemy.orm import Session
 from starlette import status
 from starlette.responses import RedirectResponse, HTMLResponse
@@ -22,7 +24,9 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @routes.get("/admin/gestion-livres", response_model=List[schemas.LivreResponse])
 @role_admin_required
-async def gestion_livre(request: Request,search:Optional[str]=Query(None, Nonedescription="Mot-clé de la recherche"), db: Session = Depends(get_db)):
+async def gestion_livre(request: Request,
+                        search: Optional[str] = Query(None, Nonedescription="Mot-clé de la recherche"),
+                        db: Session = Depends(get_db)):
     print(search)
     if search:
         query = db.query(models.Livre).filter(models.Livre.titre.ilike(f"%{search}%"))
@@ -37,8 +41,8 @@ async def gestion_livre(request: Request,search:Optional[str]=Query(None, Nonede
                                                                      "livres": livre_responses,
                                                                      "success_deleted": success_deleted,
                                                                      "success_updated": success_updated,
-                                                                     "success_create_livre":success_create_livre,
-                                                                     "search":search
+                                                                     "success_create_livre": success_create_livre,
+                                                                     "search": search
                                                                      })
 
 
@@ -52,7 +56,7 @@ async def create_livre(request: Request):
         "request": request,
         "error_save_livre": error_save_livre,
         "success_updated": success_updated,
-        "errors":errors
+        "errors": errors
     })
 
 
@@ -120,7 +124,7 @@ async def update(request: Request, id: int, db: Session = Depends(get_db)):
         "livre": livre_updated,
         "error_updated": error_updated,
         "error_id_undefined": error_id_undefined,
-        "errors":errors
+        "errors": errors
     })
 
 
@@ -139,12 +143,12 @@ async def update(
     errors = []
     if not image_url.filename:
         errors.append({
-            "image_url" : "L'image est requis"
+            "image_url": "L'image est requis"
         })
     if errors:
         request.session['errors'] = errors
         return RedirectResponse(url=f"/update_livre/{request.session.get('id_livre_to_update')}",
-                                    status_code=status.HTTP_303_SEE_OTHER)
+                                status_code=status.HTTP_303_SEE_OTHER)
     with open(file_path, "wb") as file:
         shutil.copyfileobj(image_url.file, file)
     if request.session.get('id_livre_to_update'):
@@ -193,39 +197,66 @@ async def delete(request: Request, id: int, db: Session = Depends(get_db)):
 
 
 @routes.get("/api/livres/{id}")
-@role_admin_required
-async def show(request:Request, id:int, db:Session=Depends(get_db)):
+async def show(request: Request, id: int, db: Session = Depends(get_db)):
     if id:
         livre = db.query(models.Livre).filter(models.Livre.id == id).first()
         livre_response = schemas.LivreResponse.from_orm(livre)
         return templates.TemplateResponse("/admin/livre.html", {
-            "request":request,
-            "livre":livre_response
+            "request": request,
+            "livre": livre_response
         })
     else:
         request.session['error_id_undefine'] = {
-            "status":"error",
-            "message":f"Livre avec ce id n'existe pas: {id}"
+            "status": "error",
+            "message": f"Livre avec ce id n'existe pas: {id}"
         }
         return RedirectResponse(url="/home", status_code=status.HTTP_303_SEE_OTHER)
 
-@routes.post("/api/reservations")
-async def reservation(request:Request,id_livre:int=Form(), db:Session=Depends(get_db)):
-    print(id_livre)
-    livre = db.query(models.Livre).filter(models.Livre.id == id_livre).first()
-    
-    if livre.stock != 0:
-        #Creation de la reservation
-        new_reservation = models.Reservation(
-            id_livre = id_livre,
-            id_adherent = request.session.get('user_id')
-        )
-        db.add(new_reservation)
-        db.commit()
-        db.refresh(new_reservation)
-        #Update disponibility
-        this_livre = db.query(models.Livre).filter(models.Livre.id == id_livre).first()
 
-    return templates.TemplateResponse("home.html", {
-        "request":request
-    })
+@routes.post("/api/reservations")
+async def reservation(request: Request, id_livre: int = Form(), stock: int = Form(...), db: Session = Depends(get_db)):
+    print(id_livre, stock)
+    livre = db.query(models.Livre).filter(models.Livre.id == id_livre).first()
+
+    # Verification de la reservation de ce livre par cet adherent
+    test_livre = db.query(models.Reservation).filter(
+        (models.Reservation.id_adherent == request.session.get("user_id")), (
+                models.Reservation.id_livre == id_livre), (models.Reservation.status == "confirmer")).first()
+    print(test_livre)
+    if not test_livre:
+        if livre.stock != 0:
+            # Creation de la reservation
+            new_reservation = models.Reservation(
+                id_livre=id_livre,
+                id_adherent=request.session.get('user_id')
+            )
+            db.add(new_reservation)
+            db.commit()
+            db.refresh(new_reservation)
+            db.query(models.Reservation)
+            livre_reserved = db.query(models.Livre).filter(models.Livre.id == id_livre).update({
+                'stock': stock - 1
+            })
+            if not livre_reserved:
+                raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED,
+                                    detail=f"Erreur lors de l'update du stock du livre avec l'id: {id_livre}")
+            db.commit()
+
+            request.session['success_reservation'] = {
+                "status": "success",
+                "message": f"{db.query(models.Livre).filter(models.Livre.id == id_livre).first().titre} est réservé avec succés"
+            }
+            return RedirectResponse(url='/home', status_code=status.HTTP_303_SEE_OTHER)
+        else:
+            request.session['reservation_indisponible'] = {
+                "status": "error",
+                "message": f"{db.query(models.Livre).filter(models.Livre.id == id_livre).first().titre} est indisponible"
+            }
+            return RedirectResponse(url='/home', status_code=status.HTTP_303_SEE_OTHER)
+    else:
+        request.session['livre_deja_reserved_par_vous'] = {
+            "status": "error",
+            "message": f"Vous avez déjà réservé ce livre: {db.query(models.Livre).filter(models.Livre.id == id_livre).first().titre}"
+        }
+        return RedirectResponse(url='/home', status_code=status.HTTP_303_SEE_OTHER)
+
