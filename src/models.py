@@ -47,7 +47,7 @@ class Emprunt(Base):
     id = Column(Integer, primary_key=True, index=True)
     id_livre = Column(Integer, ForeignKey("livres.id"))
     id_adherent = Column(Integer, ForeignKey("users.id"))
-    date_emprunt = Column(DateTime(timezone=True), server_default=func.now())
+    date_emprunt = Column(DateTime(timezone=True))
     date_retour_prevue = Column(DateTime(timezone=True))
     date_retour_effectif = Column(DateTime(timezone=True))
     livres = relationship("Livre", back_populates="emprunts")

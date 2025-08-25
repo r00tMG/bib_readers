@@ -23,6 +23,8 @@ class UserResponse(BaseModel):
     role: UserRole
     created_at: datetime
     status: UserStatus
+    reservations: List["ReservationResponse"]
+    #emprunts: List[EmpruntResponse]
     class Config:
         use_enum_values = True
         from_attributes = True
@@ -59,16 +61,15 @@ class Emprunt(BaseModel):
 
 class EmpruntResponse(BaseModel):
     id : int
-    adherents: List[UserResponse]
-    livres: List[LivreResponse]
+    adherents: List["UserResponse"]
+    livres: List["LivreResponse"]
     date_emprunt: datetime
     date_retour_prevue: datetime
     date_retour_effectif: datetime
     class Config:
         from_attributes = True
 
-#DTO du modele Reservation
-##reservations(id, id_adherent, id_livre, date_reservation, statut)
+
 class Reservation(BaseModel):
     id: int
     id_adherent: int
@@ -79,8 +80,8 @@ class Reservation(BaseModel):
 
 class ReservationResponse(BaseModel):
     id: int
-    adherents: List[UserResponse]
-    livres: List[LivreResponse]
+    adherents: UserResponse
+    livres: LivreResponse
     date_reservation: datetime
     status: StatusReservation
     class Config:
