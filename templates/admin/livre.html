@@ -11,52 +11,128 @@
 <h2 class="text-center my-5">Information du livre <strong>{{livre.titre}}</strong></h2>
 <div class="container w-80 m-auto">
     <div class="card m-auto" style="width: 72rem;">
-        <img src="/{{livre.image_url}}" height="400" class="card-img-top" alt="...">
-        <div class="card-body">
-            <h5 class="card-title">Titre: {{livre.titre}}</h5>
-            {% if livre.stock == 0 %}
-            <h5 class="card-title">Indisponible</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <img src="{{livre.image_url}}"  class="thumbnail"
+                                       width="auto"  alt="...">
+            </div>
+            <div class="col-md-6 mt-5">
+                <h5 class="card-title">Titre: {{livre.titre}}</h5>
+                {% if livre.stock == 0 %}
+            <h5 class="card-title">Status: <span class="badge bg-danger">Indisponible</span></h5>
             {% else %}
-            <h5 class="card-title">Disponible</h5>
+                <h5 class="card-title">Status: <span class="badge bg-info">Disponible</span></h5>
             {% endif %}
-            <p class="card-text">{{livre.description}}</p>
-            {% if livre.stock != 0 %}
-            <!-- Bouton qui ouvre la modal -->
-            <button type="button" class="btn btn-sm bg-primary text-light" data-bs-toggle="modal"
-                    data-bs-target="#confirmDelete{{ livre.id }}">
-                Reserver
-            </button>
-            {% endif %}
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">
+                   Description Livre
+                </h3>
+                <p class="card-text">{{livre.description}}</p>
+                {% if livre.stock != 0 %}
+                <!-- Bouton qui ouvre la modal -->
+                <button type="button" class="btn btn-sm bg-primary text-light" data-bs-toggle="modal"
+                        data-bs-target="#confirmDelete{{ livre.id }}">
+                    Reserver
+                </button>
+                {% endif %}
 
-            <!-- Modal Bootstrap -->
-            <div class="modal fade" id="confirmDelete{{ livre.id }}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Reservation: {{livre.titre}}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <!-- Modal Bootstrap -->
+                <div class="modal fade" id="confirmDelete{{ livre.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Reservation: {{livre.titre}}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form action="/api/reservations" method="post">
+                                <div class="modal-body">
+                                    Veuillez cliquer sur "Confirmer" pour valider votre reservation.
+                                    <div class="form-group ">
+                                        <input name="id_livre" type="number" value="{{livre.id}}" hidden="hidden"
+                                               class="form-control">
+                                    </div>
+                                    <div class="form-group ">
+                                        <input name="stock" type="number" value="{{livre.stock}}" hidden="hidden"
+                                               class="form-control">
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                    <button type="submit" class="btn btn-danger">Confirmer</button>
+                                </div>
+                            </form>
                         </div>
-                        <form action="/api/reservations" method="post">
-                            <div class="modal-body">
-                                Veuillez cliquer sur "Confirmer" pour valider votre reservation.
-                                <div class="form-group ">
-                                    <input name="id_livre" type="number" value="{{livre.id}}" hidden="hidden"
-                                           class="form-control">
-                                </div>
-                                <div class="form-group ">
-                                    <input name="stock" type="number" value="{{livre.stock}}" hidden="hidden"
-                                           class="form-control">
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                <button type="submit" class="btn btn-danger">Confirmer</button>
-                            </div>
-                        </form>
                     </div>
                 </div>
-            </div>
 
+            </div>
+        </div>
+        <div class="row">
+            <h3 class="text">Recommandations:</h3>
+            {% if recommandations %}
+            {% for livre in recommandations %}
+                <div class="col-md-3">
+            <div class="card" style="width: 18rem;">
+                <img src="{{livre.image_url}}" height="300" class="card-img-top" alt="...">
+                <!-- <embed src="/{{livre.image_url}}"
+                    type="application/pdf"
+                    width="100%"
+                    height="300px" />-->
+                <div class="card-body">
+                    <h5 class="card-title">Titre: {{livre.titre}}</h5>
+                    {% if livre.stock == 0 %}
+                    <h5 class="card-title">Status: <span class="badge bg-danger">Réservér</span></h5>
+                    {% else %}
+                    <h5 class="card-title">Status: <span class="badge bg-success">Disponible</span></h5>
+                    {% endif %}
+                    <a class="btn btn-sm btn-info" href="/api/livres/{{livre.id}}">Detail</a>
+                    {% if livre.stock != 0 %}
+                    <!-- Bouton qui ouvre la modal -->
+                    <button type="button" class="btn btn-sm bg-primary text-light" data-bs-toggle="modal"
+                            data-bs-target="#confirmDelete{{ livre.id }}">
+                        Reserver
+                    </button>
+                    {% endif %}
+
+                    <!-- Modal Bootstrap -->
+                    <div class="modal fade" id="confirmDelete{{ livre.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Reservation: {{livre.titre}}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form action="/api/reservations" method="post">
+                                    <div class="modal-body">
+                                        Veuillez cliquer sur "Confirmer" pour valider votre reservation.
+                                        <div class="form-group ">
+                                            <input name="id_livre" type="number" value="{{livre.id}}" hidden="hidden"
+                                                   class="form-control">
+                                        </div>
+                                        <div class="form-group ">
+                                            <input name="stock" type="number" value="{{livre.stock}}" hidden="hidden"
+                                                   class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            Annuler
+                                        </button>
+                                        <button type="submit" class="btn btn-danger">Confirmer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-center">Aucune recommandation disponible pour ce livre</p>
+            {% endif %}
         </div>
     </div>
 </div>

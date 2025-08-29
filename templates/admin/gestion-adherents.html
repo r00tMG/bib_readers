@@ -60,8 +60,8 @@
             <td>{{user.id}}</td>
             <td>{{user.fullname}}</td>
             <td>{{user.email}}</td>
-            <td><p class="badge bg-primary">{{user.role}}</p></td>
-            <td><p class="badge bg-info">{{user.status}}</p></td>
+            <td><p class="badge bg-primary">{{user.role.value}}</p></td>
+            <td><p class="badge bg-info">{{user.status.value}}</p></td>
             <td>{{user.created_at.date()}}</td>
             <td class="d-flex">
                 <a class="btn btn-sm btn-white" href="/modify/{{user.id}}">

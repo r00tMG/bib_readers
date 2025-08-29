@@ -17,7 +17,7 @@ templates = Jinja2Templates(directory="templates")
 @role_admin_required
 async def gestAdherents(request:Request, db:Session=Depends(get_db)):
     users = db.query(models.User).all()
-    users_response = [schemas.UserResponse.from_orm(u).dict() for u in users]
+    #users_response = [schemas.UserResponse.from_orm(u).dict() for u in users]
     success_update = request.session.pop('success_update', None)
     success_deleted = request.session.pop('success_deleted', None)
     error_deleted = request.session.pop('error_deleted', None)
@@ -26,7 +26,7 @@ async def gestAdherents(request:Request, db:Session=Depends(get_db)):
     error_suspend = request.session.pop("error_suspend", None)
     return templates.TemplateResponse("admin/gestion-adherents.html", {
         "request": request,
-        "users":users_response,
+        "users":users,
         "success_update":success_update,
         "success_deleted":success_deleted,
         "error_deleted":error_deleted,

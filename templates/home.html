@@ -7,114 +7,173 @@
     <title>Home BibReaders</title>
 </head>
 <body>
-    {% include "components/navbar.html" %}
-    {% if success_login %}
-    <div class="text-center alert alert-success">
-        {{success_login.message}}
-    </div>
-    {% endif %}
-    {% if unauthorize %}
-    <div class="text-center alert alert-danger">
-        {{unauthorize.message}}
-    </div>
-    {% endif %}
-    {% if error_id_undefine %}
-    <div class="text-center alert alert-danger">
-        {{error_id_undefine.message}}
-    </div>
-    {% endif %}
-    {% if success_reservation %}
-    <div class="text-center alert alert-success">
-        {{success_reservation.message}}
-    </div>
-    {% endif %}
-    {% if reservation_indisponible %}
-    <div class="text-center alert alert-danger">
-        {{reservation_indisponible.message}}
-    </div>
-    {% endif %}
-    {% if livre_deja_reserved_par_vous %}
-    <div class="text-center alert alert-danger">
-        {{livre_deja_reserved_par_vous.message}}
-    </div>
-    {% endif %}
-    <div class="container">
-        <div class="d-flex justify-content-between my-5">
-        <h2 class="text-center ">Listes des Recommandations</h2>
-           <form class="d-flex" action="/home" method="get">
+{% include "components/navbar.html" %}
+{% if success_login %}
+<div class="text-center alert alert-success">
+    {{success_login.message}}
+</div>
+{% endif %}
+{% if unauthorize %}
+<div class="text-center alert alert-danger">
+    {{unauthorize.message}}
+</div>
+{% endif %}
+{% if error_id_undefine %}
+<div class="text-center alert alert-danger">
+    {{error_id_undefine.message}}
+</div>
+{% endif %}
+{% if success_reservation %}
+<div class="text-center alert alert-success">
+    {{success_reservation.message}}
+</div>
+{% endif %}
+{% if reservation_indisponible %}
+<div class="text-center alert alert-danger">
+    {{reservation_indisponible.message}}
+</div>
+{% endif %}
+{% if livre_deja_reserved_par_vous %}
+<div class="text-center alert alert-danger">
+    {{livre_deja_reserved_par_vous.message}}
+</div>
+{% endif %}
+<div class="container">
+    <div class="d-flex justify-content-between my-5">
+        <h2 class="text-center ">Listes des Livres</h2>
+        <form class="d-flex" action="/home" method="get">
             <input name="search" value="{{ search or '' }}" placeholder="Search" class="form-control">
             <button type="submit" class="btn btn-sm bg-transparent">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search"
+                     viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
                 </svg>
             </button>
         </form>
-        </div>
-        <div class="row">
+    </div>
+    <div class="row">
         {% if livres %}
         {% for livre in livres %}
-            <div class="col-md-3">
-                <div class="card" style="width: 18rem;">
-<!--        <img src="/{{livre.image_url}}" height="300" class="card-img-top" alt="...">-->
-                    <embed src="/{{livre.image_url}}"
-                       type="application/pdf"
-                       width="100%"
-                       height="300px" />
+        <div class="col-md-3">
+            <div class="card" style="width: 18rem;">
+                <img src="{{livre.image_url}}" height="300" class="card-img-top" alt="...">
+                <!-- <embed src="/{{livre.image_url}}"
+                    type="application/pdf"
+                    width="100%"
+                    height="300px" />-->
 
 
-        <div class="card-body">
-            <h5 class="card-title">Titre: {{livre.titre}}</h5>
-            {% if livre.stock == 0 %}
-            <h5 class="card-title">Indisponible</h5>
-            {% else %}
-            <h5 class="card-title">Disponible</h5>
-            {% endif %}
-            <p class="card-text">{{livre.description}}</p>
-            <a class="btn btn-sm btn-info" href="/api/livres/{{livre.id}}">Detail</a>
-            {% if livre.stock != 0 %}
-            <!-- Bouton qui ouvre la modal -->
-            <button type="button" class="btn btn-sm bg-primary text-light" data-bs-toggle="modal"
-                    data-bs-target="#confirmDelete{{ livre.id }}">
-                Reserver
-            </button>
-            {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">Titre: {{livre.titre}}</h5>
+                    {% if livre.stock == 0 %}
+                    <h5 class="card-title">Status: <span class="badge bg-danger">Réservér</span></h5>
+                    {% else %}
+                    <h5 class="card-title">Status: <span class="badge bg-success">Disponible</span></h5>
+                    {% endif %}
+                    <a class="btn btn-sm btn-info" href="/api/livres/{{livre.id}}">Detail</a>
+                    {% if livre.stock != 0 %}
+                    <!-- Bouton qui ouvre la modal -->
+                    <button type="button" class="btn btn-sm bg-primary text-light" data-bs-toggle="modal"
+                            data-bs-target="#confirmDelete{{ livre.id }}">
+                        Reserver
+                    </button>
+                    {% endif %}
 
-            <!-- Modal Bootstrap -->
-            <div class="modal fade" id="confirmDelete{{ livre.id }}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Reservation: {{livre.titre}}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <!-- Modal Bootstrap -->
+                    <div class="modal fade" id="confirmDelete{{ livre.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Reservation: {{livre.titre}}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form action="/api/reservations" method="post">
+                                    <div class="modal-body">
+                                        Veuillez cliquer sur "Confirmer" pour valider votre reservation.
+                                        <div class="form-group ">
+                                            <input name="id_livre" type="number" value="{{livre.id}}" hidden="hidden"
+                                                   class="form-control">
+                                        </div>
+                                        <div class="form-group ">
+                                            <input name="stock" type="number" value="{{livre.stock}}" hidden="hidden"
+                                                   class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            Annuler
+                                        </button>
+                                        <button type="submit" class="btn btn-danger">Confirmer</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                        <form action="/api/reservations" method="post">
-                            <div class="modal-body">
-                                Veuillez cliquer sur "Confirmer" pour valider votre reservation.
-                                <div class="form-group ">
-                                    <input name="id_livre" type="number" value="{{livre.id}}" hidden="hidden"
-                                           class="form-control">
-                                </div>
-                                <div class="form-group ">
-                                    <input name="stock" type="number" value="{{livre.stock}}" hidden="hidden"
-                                           class="form-control">
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                <button type="submit" class="btn btn-danger">Confirmer</button>
-                            </div>
-                        </form>
                     </div>
+
                 </div>
             </div>
-
         </div>
-    </div>
-            </div>
         {% endfor %}
         {% endif %}
-        </div>
     </div>
+    <div class="m-3 text-center">
+        <!-- Pagination -->
+        <nav aria-label="Page navigation ">
+            <ul class="d-flex justify-content-center pagination">
+                <!-- Bouton Previous -->
+                {% if page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page - 1 }}">Previous</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><a class="page-link">Previous</a></li>
+                {% endif %}
+
+                <!-- Toujours afficher la première page -->
+                <li class="page-item {% if page == 1 %}active{% endif %}">
+                    <a class="page-link" href="?page=1">1</a>
+                </li>
+
+                <!-- Ellipse avant -->
+                {% if page > 4 %}
+                <li class="page-item disabled"><a class="page-link">…</a></li>
+                {% endif %}
+
+                <!-- Pages autour de la page courante -->
+                {% for p in range(page-2, page+3) %}
+                {% if p > 1 and p < total_pages %}
+                <li class="page-item {% if p == page %}active{% endif %}">
+                    <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+
+                <!-- Ellipse après -->
+                {% if page < total_pages - 3 %}
+                <li class="page-item disabled"><a class="page-link">…</a></li>
+                {% endif %}
+
+                <!-- Toujours afficher la dernière page -->
+                {% if total_pages > 1 %}
+                <li class="page-item {% if page == total_pages %}active{% endif %}">
+                    <a class="page-link" href="?page={{ total_pages }}">{{ total_pages }}</a>
+                </li>
+                {% endif %}
+
+                <!-- Bouton Next -->
+                {% if page < total_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page + 1 }}">Next</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><a class="page-link">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+
+
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
         integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p"
         crossorigin="anonymous"></script>

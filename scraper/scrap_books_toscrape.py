@@ -1,3 +1,4 @@
+import os
 import time, re, csv
 import pandas as pd
 from selenium import webdriver
@@ -76,6 +77,7 @@ while True:
 driver.quit()
 
 # ---- Sauvegarder CSV ----
+os.makedirs("./datas", exist_ok=True)
 df = pd.DataFrame(books_data)
-df.to_csv("livres_bruts.csv", index=False, encoding="utf-8")
+df.to_csv("./datas/livres_bruts.csv", index=False, encoding="utf-8")
 print(" Données sauvegardées dans livres_bruts.csv")
