@@ -15,7 +15,7 @@ if not DATABASE_URL:
 # ---- Charger les données depuis PostgreSQL ----
 try:
     conn = psycopg2.connect(DATABASE_URL)
-    df = pd.read_sql("SELECT id, title, description FROM livres", conn)
+    df = pd.read_sql("SELECT id, titre, description,stock,rating, image_url FROM livres", conn)
     conn.close()
     print(" Données chargées depuis PostgreSQL")
 except Exception as e:
@@ -30,7 +30,7 @@ tfidf_matrix = tfidf.fit_transform(df["description"].fillna(""))
 cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
 
 # ---- Sauvegarde du modèle ----
-joblib.dump((df, tfidf, cosine_sim), "modele_recommandation.pkl")
+joblib.dump((df, tfidf, cosine_sim), "./models/modele_recommandation.pkl")
 print(" Modèle de recommandation sauvegardé")
 
 # ---- Fonction de recommandation ----
@@ -42,9 +42,8 @@ def recommander(livre_id, n=5):
     idx = df.index[df["id"] == livre_id][0]
     scores = list(enumerate(cosine_sim[idx]))
     scores = sorted(scores, key=lambda x: x[1], reverse=True)[1:n+1]  # ignorer le livre lui-même
-    recos = df.iloc[[i[0] for i in scores]][["id","title"]]
+    recos = df.iloc[[i[0] for i in scores]][["id","titre","stock","rating", "image_url"]]
     return recos
 
-# ---- Exemple ----
 if __name__ == "__main__":
     print(recommander(livre_id=1))

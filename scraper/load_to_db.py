@@ -11,7 +11,7 @@ if not DATABASE_URL:
     raise ValueError(" La variable DATABASE_URL n'est pas définie dans le fichier .env")
 
 # ---- Charger le CSV nettoyé ----
-df = pd.read_csv("livres_nettoyes.csv")
+df = pd.read_csv("./datas/livres_nettoyes.csv")
 
 # ---- Connexion PostgreSQL ----
 try:
@@ -22,12 +22,11 @@ try:
     # ---- Insertion des données ----
     for _, row in df.iterrows():
         cur.execute("""
-            INSERT INTO livres (title, description, price, availability, rating, image_url)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO livres (titre, description, stock, rating, image_url)
+            VALUES (%s, %s, %s, %s, %s)
         """, (
             row["title"],
             row["description"],
-            row["price"],
             row["availability"],
             row["rating"],
             row["image_url"]

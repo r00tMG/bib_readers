@@ -10,6 +10,7 @@ from starlette import status
 from starlette.responses import RedirectResponse, HTMLResponse
 from starlette.templating import Jinja2Templates
 
+from routes.recommandation import recommander
 from src import models, schemas
 from src.database import get_db
 from src.security import role_admin_required
@@ -185,8 +186,9 @@ async def update(
 @routes.post("/delete/livre/{id}")
 @role_admin_required
 async def delete(request: Request, id: int, db: Session = Depends(get_db)):
-    query = db.query(models.Livre).filter(models.Livre.id == id).delete(synchronize_session=False)
+    query = db.query(models.Livre).filter(models.Livre.id == id).first()
     if query:
+        db.delete(query)
         db.commit()
         print("Reste to commit")
         request.session['success_deleted'] = {
@@ -201,9 +203,14 @@ async def show(request: Request, id: int, db: Session = Depends(get_db)):
     if id:
         livre = db.query(models.Livre).filter(models.Livre.id == id).first()
         livre_response = schemas.LivreResponse.from_orm(livre)
+        recos = recommander(id)
+        if not recos:
+            raise HTTPException(status_code=404, detail="Livre non trouvé")
+        #print(recos)
         return templates.TemplateResponse("/admin/livre.html", {
             "request": request,
-            "livre": livre_response
+            "livre": livre_response,
+            "recommandations": recos
         })
     else:
         request.session['error_id_undefine'] = {
@@ -234,13 +241,6 @@ async def reservation(request: Request, id_livre: int = Form(), stock: int = For
             db.commit()
             db.refresh(new_reservation)
             db.query(models.Reservation)
-            livre_reserved = db.query(models.Livre).filter(models.Livre.id == id_livre).update({
-                'stock': stock - 1
-            })
-            if not livre_reserved:
-                raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED,
-                                    detail=f"Erreur lors de l'update du stock du livre avec l'id: {id_livre}")
-            db.commit()
 
             request.session['success_reservation'] = {
                 "status": "success",
